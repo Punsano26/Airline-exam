@@ -1,51 +1,61 @@
-import React from 'react'
-import { RiAccountCircleLine } from "react-icons/ri";
-const Navbar = () => {
-    return (
-        <div>
-            <div className="navbar bg-base-100 shadow-sm">
-                <div className="navbar-start">
-                    <div className="dropdown">
-                        <div tabIndex={0} role="button" className="btn btn-ghost lg:hidden">
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"> <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h8m-8 6h16" /> </svg>
-                        </div>
-                        <ul
-                            tabIndex={0}
-                            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow">
-                            <li><a>Item 1</a></li>
-                            <li>
-                                <a>Parent</a>
-                                <ul className="p-2">
-                                    <li><a>Submenu 1</a></li>
-                                    <li><a>Submenu 2</a></li>
-                                </ul>
-                            </li>
-                            <li><a>Item 3</a></li>
-                        </ul>
-                    </div>
-                    <a className="btn btn-ghost text-xl">daisyUI</a>
-                </div>
-                <div className="navbar-center hidden lg:flex">
-                    <ul className="menu menu-horizontal px-1">
-                        <li><a>Item 1</a></li>
-                        <li>
-                            <details>
-                                <summary>Parent</summary>
-                                <ul className="p-2">
-                                    <li><a>Submenu 1</a></li>
-                                    <li><a>Submenu 2</a></li>
-                                </ul>
-                            </details>
-                        </li>
-                        <li><a>Item 3</a></li>
-                    </ul>
-                </div>
-                <div className="navbar-end">
-                    <a className="btn"><RiAccountCircleLine />เข้าสู่ระบบ</a>
-                </div>
-            </div>
-        </div>
-    )
-}
+import { Link, useNavigate } from 'react-router';
+import { useEffect } from 'react';
+import axios from 'axios';
+import { useAuth } from '../store/useAuth';
 
-export default Navbar
+export default function Navbar() {
+  const { isPassenger, isAdmin, setPassenger, setAdmin, logout } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    // เช็คสถานะผู้โดยสาร
+    axios.get('http://localhost:5000/api/passenger/me', { withCredentials: true })
+      .then(res => res.data.isAuth && setPassenger())
+      .catch(() => {});
+
+    // เช็คสถานะแอดมิน
+    axios.get('http://localhost:5000/api/admin/me', { withCredentials: true })
+      .then(res => res.data.isAuth && setAdmin())
+      .catch(() => {});
+  }, []);
+
+  const handleLogout = async () => {
+    if (isPassenger) await axios.post('http://localhost:5000/api/passenger/logout', {}, { withCredentials: true });
+    if (isAdmin) await axios.post('http://localhost:5000/api/admin/logout', {}, { withCredentials: true });
+
+    logout();
+    navigate('/');
+  };
+
+  return (
+    <div className="navbar bg-base-200 shadow mb-4">
+      <div className="flex-1">
+        <Link to="/" className="text-xl font-bold">✈️ Nakhon Pathom Airline</Link>
+      </div>
+      <div className="flex-none gap-2">
+        {isPassenger && (
+          <>
+            <Link to="/passenger/flights" className="btn btn-ghost">เที่ยวบิน</Link>
+            <Link to="/my-tickets" className="btn btn-ghost">ตั๋วของฉัน</Link>
+            <Link to="/passenger/profile" className="btn btn-ghost">โปรไฟล์</Link>
+            <button onClick={handleLogout} className="btn btn-outline btn-error">ออกจากระบบ</button>
+          </>
+        )}
+
+        {isAdmin && (
+          <>
+            <Link to="/admin/flights" className="btn btn-ghost">จัดการเที่ยวบิน</Link>
+            <button onClick={handleLogout} className="btn btn-outline btn-error">ออกจากระบบ</button>
+          </>
+        )}
+
+        {!isPassenger && !isAdmin && (
+          <>
+            <Link to="/login" className="btn btn-ghost">เข้าสู่ระบบ</Link>
+            <Link to="/register" className="btn btn-primary">สมัครสมาชิก</Link>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -4,14 +4,10 @@ import FlightSearch from '../../components/FlightSearch';
 const Home = () => {
     return (
         <>
-            <div>
-                <button className="btn btn-secondary m-2"><FaRegPaperPlane />ตั๋วเครื่องบิน</button>
-            </div>
-            <div className='m-4'>
-                <h2 className='text-center text-3xl'>Nakhon Pathom Airline</h2>
-            </div>
+          
+           
             <div className='flex justify-center'>
-                <FlightSearch />
+               
             </div>
             <div
                 className="hero min-h-screen"
@@ -25,7 +21,7 @@ const Home = () => {
                         <p className="mb-5">
                             ยินต้อนรับสู่ สนามบินของเรา นครปฐม
                         </p>
-                        <button className="btn btn-primary">Get Started</button>
+                        <a href="/login" className="btn btn-secondary m-2"><FaRegPaperPlane />ตั๋วเครื่องบิน</a>
                     </div>
                 </div>
             </div>

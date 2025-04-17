@@ -1,31 +1,33 @@
+// server/index.js
 const express = require("express");
-const cors = require("cors");
-require("dotenv").config();
 const mongoose = require("mongoose");
-
+const cors = require("cors");
+const dotenv = require("dotenv");
+const cookieParser = require("cookie-parser");
+const flightRoutes = require("./routers/flights");
+const passengerAuth = require("./routers/passengerAuth");
+const ticketRoutes = require("./routers/tickets");
+const adminAuth = require("./routers/adminAuth");
+dotenv.config();
 const app = express();
-const BASE_URL = process.env.BASE_URL;
-const PORT = process.env.PORT;
-const DB_URL = process.env.DB_URL;
 
-const userRouter = require("./routers/user.router");
-
-try {
-  mongoose.connect(DB_URL);
-  console.log("DB Connect to Mongo DB Successfully");
-} catch (error) {
-  console.log("DB Don't Connect");
-}
-
-app.use(cors({ origin: BASE_URL, credentials: true }));
 app.use(express.json());
-app.get("/", (req, res) => {
-  res.send("<h1>Welcome to SE NPRU Aitline ResFul API</h1>");
-});
+app.use(
+  cors({
+    origin: "http://localhost:5173", // URL ของ frontend
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 
-//user Routers
-app.use("/api/v1/user", userRouter);
+mongoose
+  .connect(process.env.MONGO_URL)
+  .then(() => console.log("MongoDB Connected"))
+  .catch((err) => console.error(err));
+app.use("/api/flights", flightRoutes);
+app.use("/api/passenger", passengerAuth);
+app.use("/api/tickets", ticketRoutes);
+app.use("/api/admin", adminAuth);
+app.get("/", (req, res) => res.send("Welcome to Nakhon Pathom Airline API"));
 
-app.listen(PORT, () => {
-  console.log("Server is running on http://localhost:" + PORT);
-});
+app.listen(5000, () => console.log("Server running on port 5000"));
